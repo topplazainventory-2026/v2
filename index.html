@@ -4743,17 +4743,22 @@
   }
 
   function tpSetLoggedInUser(user) {
+    // Always rebuild the signed-in header from the authenticated server response.
     tpCurrentUser = user || {};
-    document.getElementById('tpLoggedInName').textContent = tpCurrentUser.name || tpCurrentUser.username || '';
-    document.getElementById('tpLoggedInRole').textContent = tpCurrentUser.role ? '• ' + tpCurrentUser.role : '';
+    var name = tpCurrentUser.name || tpCurrentUser.username || '';
+    var role = tpCurrentUser.role || '';
+    document.getElementById('tpLoggedInName').textContent = name;
+    document.getElementById('tpLoggedInRole').textContent = role ? '• ' + role : '';
+    document.getElementById('tpUserTopBar').style.display = 'flex';
     document.getElementById('tpLoginOverlay').style.display = 'none';
     document.body.classList.add('tpAuthenticated');
-    if (!tpAppInitialized) {
-      tpAppInitialized = true;
-      loadItems();
-      loadDashboardImage();
-      showHomePage();
-    }
+
+    // Reload the app data after EVERY successful login, including after logout.
+    // This prevents the page from returning with an empty/stale view.
+    tpAppInitialized = true;
+    loadItems();
+    loadDashboardImage();
+    showHomePage();
   }
 
   function tpSubmitLogin() {
