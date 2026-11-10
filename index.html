@@ -2037,7 +2037,7 @@
     </div>
     <div class="card">
       <h2>⏳ Expiration Date Monitoring</h2>
-      <p>The list loads automatically and is sorted by earliest expiration date. Quantities are the total Stock IN quantities for each item and expiration date; Stock OUT is not deducted. Search uses the ITEM names in the Items sheet. If a selected date range has no matching entries, the full available expiration list is shown automatically.</p>
+      <p>The list loads automatically and is sorted by earliest expiration date. Entries with the same item and the same expiration date are combined into one total; the same item with a different expiration date remains a separate batch. This page totals Stock IN entries only; Stock OUT is not deducted. Status is calculated automatically: NORMAL (more than 90 days), WARNING (31–90 days), CRITICAL (1–30 days), and EXPIRED (past the expiration date).</p>
       <label for="expiryFrom">Expiration Date From (optional)</label><input type="date" id="expiryFrom">
       <label for="expiryTo">Expiration Date To (optional)</label><input type="date" id="expiryTo">
       <label for="expiryItemSearch">Item Name Search (optional)</label><input type="text" id="expiryItemSearch" list="expiryItemOptions" placeholder="Type or select an item name"><datalist id="expiryItemOptions"></datalist>
@@ -3287,12 +3287,14 @@
         host.innerHTML = '<p>No dated Stock IN quantities are available for the selected item(s).</p>';
         return;
       }
-      var html = '<table><thead><tr><th>EXPIRATION DATE</th><th>ITEM</th><th>TOTAL STOCK IN QUANTITY</th></tr></thead><tbody>';
+      var html = '<table><thead><tr><th>EXPIRATION DATE</th><th>ITEM</th><th>TOTAL STOCK IN QUANTITY</th><th>DAYS REMAINING</th><th>STATUS</th></tr></thead><tbody>';
       expirationMonitorRows.forEach(function(r) {
+        var daysLabel = Number(r.daysRemaining) < 0 ? Math.abs(Number(r.daysRemaining)) + ' days overdue' : r.daysRemaining + ' days';
         html += '<tr><td>' + escapeExpiryHtml(formatExpiryDate(r.expirationDate)) + '</td><td>' + escapeExpiryHtml(r.item) +
-          '</td><td>' + escapeExpiryHtml(r.quantity) + '</td></tr>';
+          '</td><td>' + escapeExpiryHtml(r.quantity) + '</td><td>' + escapeExpiryHtml(daysLabel) +
+          '</td><td><b>' + escapeExpiryHtml(r.status) + '</b></td></tr>';
       });
-      html += '</tbody></table><p><b>Item/expiration groups:</b> ' + expirationMonitorRows.length + ' (earliest expiration first; Stock OUT not deducted)</p>';
+      html += '</tbody></table><p><b>Item/expiration groups:</b> ' + expirationMonitorRows.length + ' (same item + same date summed; different dates kept separate; earliest expiration first; Stock OUT not deducted)</p>';
       host.innerHTML = html;
     }).withFailureHandler(function(e) {
       document.getElementById('expirationResults').innerHTML = '<p class="error">' + escapeExpiryHtml(e.message || e) + '</p>';
